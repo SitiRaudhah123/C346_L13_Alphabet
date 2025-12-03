@@ -1,30 +1,42 @@
 import React, {useState} from 'react';
-import {StatusBar, View, Button, Text, TextInput} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
-import {datasource} from './Data';
+import { StatusBar, View, Button, Text, TextInput } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets  } from 'react-native-safe-area-context';
 
-const Add = ({navigation}) => {
-    const [letter, setLetter] = useState("");
-    const [type, setType] = useState("Vowels");
+
+const Add = ({navigation, route}) => {
+
+    const insets = useSafeAreaInsets();
+
+    const[letter,setLetter] = useState("");
+    const[type,setType] = useState("Vowels");
+
+    const setData = async (value) => {
+        AsyncStorage.setItem("alphadata", value);
+        navigation.navigate("Home");
+    };
 
     return (
-        <View>
+        <View style={{ paddingTop: insets.top }}>
             <StatusBar/>
             <Text>Letter:</Text>
-            <TextInput maxLength={1} style={{borderWidth: 1}} onChangeText={(text) => setLetter(text)}/>
-            <Picker onValueChange={(value) => setType(value)}>
+            <TextInput maxLength={1} style={{borderWidth:1}} onChangeText={(text)=>setLetter(text)}/>
+            <Picker onValueChange={(value)=>setType(value)}>
                 <Picker.Item label='Vowels' value='Vowels'/>
                 <Picker.Item label='Consonants' value='Consonants'/>
             </Picker>
             <Button title='Submit'
-                    onPress={() => {
-                        let item = {key: letter};
+                    onPress={()=>{
+                        let mydata = JSON.parse(route.params.datastring);
+                        let item = {key:letter};
                         let indexnum = 1;
-                        if (type == "Vowels") {
+                        if(type=="Vowels") {
                             indexnum = 0;
                         }
-                        datasource[indexnum].data.push(item);
-                        navigation.navigate("Home")
+                        mydata[indexnum].data.push(item);
+                        let stringdata = JSON.stringify(mydata);
+                        setData(stringdata);
                     }
                     }
             />

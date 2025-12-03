@@ -1,11 +1,31 @@
 import React, {useState} from 'react';
 import {Alert, View, Button, Text, TextInput} from 'react-native';
-import {datasource} from './Data';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Edit = ({navigation, route}) => {
+    const insets = useSafeAreaInsets();
+
     const [letter, setLetter] = useState(route.params.key);
+    const [mydata, setMydata] = useState([]);
+
+    const getData = async () => {
+        let datastr = await AsyncStorage.getItem("alphadata");
+        if (datastr != null) {
+            const jsondata = JSON.parse(datastr);
+            setMydata(jsondata);
+        }
+    };
+
+    const setData = async (value) => {
+        AsyncStorage.setItem("alphadata", value);
+        navigation.navigate("Home");
+    };
+
+    getData();
+
     return (
-        <View>
+        <View style={{ paddingTop: insets.top }}>
             <Text>Letter:</Text>
             <TextInput value={letter} maxLength={1} style={{borderWidth: 1}} onChangeText={(text) => setLetter(text)}/>
             <View style={{flexDirection: "row"}}>
@@ -16,8 +36,9 @@ const Edit = ({navigation, route}) => {
                                 if (route.params.type == "Vowels") {
                                     indexnum = 0;
                                 }
-                                datasource[indexnum].data[route.params.index].key = letter;
-                                navigation.navigate("Home")
+                                mydata[indexnum].data[route.params.index].key = letter;
+                                let stringdata = JSON.stringify(mydata);
+                                setData(stringdata);
                             }
                             }
                     />
@@ -32,8 +53,9 @@ const Edit = ({navigation, route}) => {
                                 Alert.alert("Are you sure?", '',
                                     [{
                                         text: 'Yes', onPress: () => {
-                                            datasource[indexnum].data.splice(route.params.index, 1);
-                                            navigation.navigate("Home")
+                                            mydata[indexnum].data.splice(route.params.index, 1);
+                                            let stringdata = JSON.stringify(mydata);
+                                            setData(stringdata);
                                         }
                                     },
                                         {text: 'No'}])
